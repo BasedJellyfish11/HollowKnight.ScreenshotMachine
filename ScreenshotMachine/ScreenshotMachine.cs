@@ -1,93 +1,57 @@
-﻿using Modding;
+﻿using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using Modding;
 using UnityEngine;
+using Logger = Modding.Logger;
 
 namespace ScreenshotMachine
 {
     public class ScreenshotMachine : Mod
     {
-        private bool _toggled;
-
-
         public override void Initialize()
         {
-            ModHooks.Instance.HeroUpdateHook += ScreenshotThings;
-            On.GameManager.BeginSceneTransition += ResetCamera;
+            ModHooks.Instance.HeroUpdateHook += CameraHandler.HotkeyHandler;
+            
+            On.GameManager.BeginSceneTransition += CameraHandler.Reset;
+            On.GameManager.BeginSceneTransition += ParticleStopper.StopFreeze;
+            
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += ParticleStopper.CallFreezeParticles;
+            
+            On.CameraController.LateUpdate += CameraHandler.RemoveCameraLogic;
+
+            LoadLines();
         }
 
-        private void ResetCamera(On.GameManager.orig_BeginSceneTransition orig, GameManager self,
-            GameManager.SceneLoadInfo info)
+        public new static void Log(object message)
         {
-            GameCameras.instance.cameraController.camTarget.mode = CameraTarget.TargetMode.FOLLOW_HERO;
-            orig(self, info);
+            Logger.Log("[ScreenshotMachine] - " + message );
         }
 
-        private void MoveCamera(Vector3 movement)
+        public override string GetVersion()
         {
-            GameCameras.instance.cameraController.camTarget.transform.position += movement;
-            GameCameras.instance.cameraController.transform.position += movement;
-            GameCameras.instance.cameraController.camTarget.FreezeInPlace();
+            return "1.1";
         }
 
-        private void ScreenshotThings()
+        public void LoadLines()
         {
-
-            if (Input.GetKeyDown(KeyCode.RightArrow))
+            Assembly callingAssembly = new StackFrame(1, false).GetMethod()?.DeclaringType?.Assembly;
+            
+            using (Stream stream = callingAssembly.GetManifestResourceStream("ScreenshotMachine.Images.Lines.png"))
             {
-                MoveCamera(new Vector3(0.1f, 0f, 0f));
-            }
-
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                MoveCamera(new Vector3(-0.1f, 0f, 0f));
-            }
-
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-                MoveCamera(new Vector3(0f, 0.1f, 0f));
-            }
-
-            if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                MoveCamera(new Vector3(0f, -0.1f, 0f));
-            }
-
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                GameCameras.instance.cameraController.camTarget.mode = CameraTarget.TargetMode.FOLLOW_HERO;
-
-            }
-
-            if (Input.GetKeyDown(KeyCode.Pause))
-            {
-                if (!_toggled)
-                {
-                    HeroController.instance.vignette.enabled = false;
-
-                    Color a = HeroController.instance.gameObject.transform.Find("HeroLight").gameObject
-                        .GetComponent<SpriteRenderer>().color;
-                    a.a = 0f;
-                    HeroController.instance.gameObject.transform.Find("HeroLight").gameObject
-                        .GetComponent<SpriteRenderer>().color = a;
-                    GameCameras.instance.hudCanvas.gameObject.SetActive(false);
-
-                }
-
-                if (_toggled)
-                {
-                    HeroController.instance.vignette.enabled = true;
-
-                    Color a = HeroController.instance.gameObject.transform.Find("HeroLight").gameObject
-                        .GetComponent<SpriteRenderer>().color;
-                    a.a = 0.7f;
-                    HeroController.instance.gameObject.transform.Find("HeroLight").gameObject
-                        .GetComponent<SpriteRenderer>().color = a;
-                    GameCameras.instance.hudCanvas.gameObject.SetActive(true);
-                    
-                }
                 
-                _toggled = !_toggled;
+                byte[] buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, buffer.Length);
 
+                // Create texture from bytes
+                Texture2D tex = new Texture2D(1, 1);
+                tex.LoadImage(buffer, true);
+
+                // Create sprite from texture
+                CameraHandler.LineSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
             }
         }
+
+            
     }
 }
