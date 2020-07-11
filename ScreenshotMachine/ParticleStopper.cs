@@ -1,20 +1,29 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.SceneManagement;
+using GlobalEnums;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace ScreenshotMachine
 {
     public static class ParticleStopper
     {
-        private const float  DisplayTime = 60f;
-        private const float StoppedTime = 20f;
 
-        private static readonly List<Coroutine> CoroutinesRunning = new List<Coroutine>();
+        private static readonly Dictionary<ParticleSystem, float> LoopingParticles = new Dictionary<ParticleSystem,float>();
 
-        private static readonly List<ParticleSystem> StoppedParticles = new List<ParticleSystem>();
+        public static NonBouncer CoroutineStarter;
+
+        private static readonly PhysLayers[] LayersToStop =
+        {
+            PhysLayers.DEFAULT,
+            PhysLayers.GRASS,
+            PhysLayers.WATER,
+            PhysLayers.ITEM
+        };
+        
+        
 
         /* Not needed anymore now that I just scan for the ParticleController type, but these are the names of the particles that are part of the camera and not the scene
          * Might be useful in the future
@@ -39,91 +48,166 @@ namespace ScreenshotMachine
             "abyss particles"
         };
         */
-        
-        
+
+
         public static void CallFreezeParticles(Scene arg0, LoadSceneMode loadSceneMode)
         {
-            GameManager.instance.StartCoroutine(FreezeParticles());
+
+            if(arg0.name == GameManager.GetBaseSceneName(arg0.name))
+                CoroutineStarter.StartCoroutine(FindParticles());
         }
 
-        public static void StopFreeze(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
+        private static IEnumerator FindParticles()
         {
-            foreach (ParticleSystem particles in StoppedParticles)
-            {
-                if(particles == null)
-                    continue;
-                particles.Play(); //Play the particles in case they were off due to the class stopping them
-            }
-            
-            foreach (Coroutine coroutine in CoroutinesRunning)
-            {
-                GameManager.instance.StopCoroutine(coroutine);
-            }
-            
-            orig(self, info);
-        }
-        private static IEnumerator FreezeParticles()
-        {
-            
-           
             yield return null; // Wait 1 frame wait for sceneLoaded hook
-
-            yield return new WaitForSeconds(DisplayTime);
             
-            CoroutinesRunning.Add(GameManager.instance.StartCoroutine(StopParticles(UnityEngine.Object.FindObjectsOfType<ParticleSystem>().Where(particle => particle.isPlaying).ToArray())));  
+            LoopingParticles.Clear();
+            
+            ScreenshotMachine.Log("Finding particles for scene " + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+            
+            foreach (ParticleSystem particleSystem in Object.FindObjectsOfType<ParticleSystem>().Where(particle => particle.isPlaying 
+                                                                                                                   && !IsParentedToLiving(particle.transform)
+                                                                                                                   && LayersToStop.Contains((PhysLayers)particle.gameObject.layer)))
+            {
+                if(particleSystem == null)
+                    continue;
+                LoopingParticles.Add(particleSystem, particleSystem.emission.rateOverTimeMultiplier);
+            }
+            
+            CoroutineStarter.StartCoroutine(StopParticles());
             
         }
 
-        private static IEnumerator StopParticles(ParticleSystem[] particleSystems)
+        private static IEnumerator StopParticles()
         {
+            
+            foreach (ParticleSystem particles in LoopingParticles.Keys)
+            {
+                if (particles == null)
+                    continue;
+                ScreenshotMachine.Log("Stopping particle " + particles.name);
+                particles.Stop();
 
-                float[] ratesOverTimeMultipliers = new float[particleSystems.Length]; //saved for when we make the particles exist again
-
-                for (int i = 0; i < particleSystems.Length; ++i)
-                {
-
-                    ratesOverTimeMultipliers[i] = particleSystems[i].emission.rateOverTimeMultiplier; //saved for when we make the particles exist again
-                    particleSystems[i].Stop();
-                    StoppedParticles.Add(particleSystems[i]);
-                }
-
-                yield return new WaitForSeconds(StoppedTime); //Wait for the particles to disappear
-
-                for (int i = 0; i < particleSystems.Length; ++i) //Start the particles back up. This should probably be a different method and not one called StopParticles lol
-                {
-
-                    if (particleSystems[i]==null)
-                        continue;
-                    ParticleSystem.EmissionModule emissionModule = particleSystems[i].emission;
-                    emissionModule.rateOverTimeMultiplier = 0f;
-                    particleSystems[i].randomSeed = (uint) i;
-                    particleSystems[i].Play();
-                    StoppedParticles.Remove(particleSystems[i]);
-                    GameManager.instance.StartCoroutine(Lerp(particleSystems[i].emission.rateOverTimeMultiplier, ratesOverTimeMultipliers[i], 0, emissionModule));
-
-                }
-        }
-
-        private static IEnumerator Lerp(float start, float end, float t, ParticleSystem.EmissionModule emissionModule)
-        {
-            float lerpRate = end/((DisplayTime+1 - (DisplayTime*9/10)) * 60); //Increase the particles at a variable rate so that every particle can reach the maximum amount. 
-            //we do +1 to avoid division by 0 errors. DisplayTime*9/10 means that we will display the particles in full a 10% of the DisplayTime, and lerp them up during the rest
-            while (t < 1){
-                try
-                {
-                    emissionModule.rateOverTimeMultiplier = Mathf.Lerp(start, end, t);
-
-                }
-                catch (NullReferenceException) //If we change scene while lerping and a particle controller disappears, the NulLReferenceException thrown will kill other lerps that may still be useful, interrupting them and bleeding particles
-                {
-                    yield break;
-                }
-                t += lerpRate;
-                yield return new WaitForSeconds(0.16f);
             }
 
-            emissionModule.rateOverTimeMultiplier = end; //make sure we don't bleed particles due to lerpRate not adding up to 1 cleanly
+            yield return new WaitForSeconds(ScreenshotMachine.Settings.stoppedTime); // Wait the stopped time
 
+            foreach (ParticleSystem key in LoopingParticles.Keys)
+            {
+                if(key == null)
+                    continue;
+                
+                ParticleSystem.Particle[] particleSystems = new ParticleSystem.Particle[key.particleCount];
+                key.GetParticles(particleSystems);
+                float extraWait = 0f;
+                foreach (ParticleSystem.Particle particle in particleSystems)
+                {
+                    if (particle.remainingLifetime > 0f && particle.remainingLifetime > extraWait)
+                    {
+                        extraWait = particle.remainingLifetime;
+                    }
+                }
+                
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if(extraWait != 0f)
+                    ScreenshotMachine.Log($"The established stopped time wasn't enough for all the particles to disappear! Waiting an extra {extraWait} seconds");
+                yield return new WaitForSeconds(extraWait);
+                
+                ParticleSystem.EmissionModule emissionModule = key.emission;
+                emissionModule.rateOverTimeMultiplier = 0f;
+                
+            }
+
+            CoroutineStarter.StartCoroutine(StartParticles());
         }
+
+        private static IEnumerator StartParticles()
+        {
+            ScreenshotMachine.Log("Starting particles back up");
+
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (ScreenshotMachine.Settings.displayTime == 0f)
+                yield break;
+
+            float startTime = Time.time;
+
+            foreach (ParticleSystem key in LoopingParticles.Keys)
+            { 
+                if(key == null)
+                    continue;
+                key.time = 0f;
+                if (ScreenshotMachine.Settings.alwaysUseSameSeedForParticles)
+                    key.randomSeed = 1;
+                key.Play();
+            }
+            
+            float t = 0f;
+            while (t <= 1f)
+            {
+                foreach (KeyValuePair<ParticleSystem, float> pair in LoopingParticles)
+                {
+                    if (pair.Key == null)
+                        continue;
+
+                    if (!pair.Key.isPlaying)
+                        pair.Key.Play();
+
+                    ParticleSystem.EmissionModule emissionModule = pair.Key.emission;
+                    emissionModule.rateOverTimeMultiplier = Mathf.Lerp(0, pair.Value, t);
+                }
+
+                t = (Time.time - startTime) / (ScreenshotMachine.Settings.displayTime);
+                yield return null;
+            }
+
+            foreach (KeyValuePair<ParticleSystem, float> pair in LoopingParticles)
+            {
+                ScreenshotMachine.Log("End of loop");
+                if(pair.Key == null)
+                    continue;
+                
+                ParticleSystem.EmissionModule emissionModule = pair.Key.emission;
+                
+                emissionModule.rateOverTimeMultiplier = pair.Value;
+            }
+
+            CoroutineStarter.StartCoroutine(StopParticles());
+        }
+
+
+        
+        
+        
+        public static void StopFreeze(On.GameManager.SceneLoadInfo.orig_NotifyFetchComplete origNotifyFetchComplete, GameManager.SceneLoadInfo sceneLoadInfo)
+        {
+            CoroutineStarter.StopAllCoroutines();
+            
+            foreach (KeyValuePair<ParticleSystem, float> pair in LoopingParticles)
+            {
+                if (pair.Key == null)
+                    continue;
+                pair.Key.Play(); // Play the particles in case they were off due to the class stopping them
+                ParticleSystem.EmissionModule emissionModule = pair.Key.emission;
+                emissionModule.rateOverTimeMultiplier = pair.Value;
+            }
+            
+            LoopingParticles.Clear();
+
+            
+            origNotifyFetchComplete(sceneLoadInfo);
+        }
+
+        private static bool IsParentedToLiving(Transform objectToCheck)
+        {
+            while (objectToCheck != null && objectToCheck.name != "Knight" && objectToCheck.gameObject.GetComponent<HealthManager>() == null)
+            {
+                objectToCheck = objectToCheck.parent;
+                
+            }
+
+            return objectToCheck != null;
+        }
+
     }
+    
 }

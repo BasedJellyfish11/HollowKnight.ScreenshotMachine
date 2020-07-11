@@ -66,12 +66,14 @@
     <Compile Include="ParticleStopper.cs" />
     <Compile Include="ScreenshotMachine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(ProjectDir)Images/Lines.png" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetDir)ScreenshotMachine.dll" DestinationFiles="$(ProjectDir)Compiled Binaries/ScreenshotMachine.dll" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files (x86)\GOG Galaxy\Games\Hollow Knight\hollow_knight_Data\Managed\Mods&quot;" />
   </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

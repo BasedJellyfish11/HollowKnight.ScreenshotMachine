@@ -2,7 +2,6 @@
 using GlobalEnums;
 using Modding;
 using UnityEngine;
-
 namespace ScreenshotMachine
 {
     public static class CameraHandler
@@ -10,22 +9,10 @@ namespace ScreenshotMachine
         private static bool _toggled;
         private static bool _frozenCamera;
         private static GameObject _blurPlane;
-        private static float _xOffset;
-        private static float _xLookAhead;
+        
         private static bool _lineDrawn;
         private static bool _blurPlaneOff;
-
-        public const KeyCode KeyMoveCameraLeft = KeyCode.LeftArrow;
-        public const KeyCode KeyMoveCameraRight = KeyCode.RightArrow;
-        public const KeyCode KeyMoveCameraUp = KeyCode.UpArrow;
-        public const KeyCode KeyMoveCameraDown = KeyCode.DownArrow;
-        public const KeyCode KeyMoveCameraIn = KeyCode.Keypad6;
-        public const KeyCode KeyMoveCameraOut = KeyCode.Keypad4;
-        public const KeyCode KeyToggleScreenshotMode = KeyCode.Pause;
-        public const KeyCode KeyToggleBlurPlane = KeyCode.R;
-        public const KeyCode KeyToggleCenterLine = KeyCode.E;
-        public const KeyCode KeyRestoreCamera = KeyCode.Q;
-
+        
         
         public static Sprite LineSprite { get; set; }
 
@@ -35,50 +22,36 @@ namespace ScreenshotMachine
 
             if (!_frozenCamera)
             {
-                _xOffset = GameCameras.instance.cameraController.camTarget.xOffset;
-                GameCameras.instance.cameraController.camTarget.xOffset = 0;
-                _xLookAhead = GameCameras.instance.cameraController.camTarget.xLookAhead;
-                GameCameras.instance.cameraController.camTarget.xLookAhead = 0;
-                GameCameras.instance.cameraController.camTarget.stickToHeroY = false;
-                GameCameras.instance.cameraController.camTarget.stickToHeroX = false;
-
-
-                GameCameras.instance.cameraController.camTarget.FreezeInPlace();
+                GameCameras.instance.cameraController.FreezeInPlace();
                 _frozenCamera = true;
             }
 
             while (Input.GetKey(keyPressed))
             {
-                GameCameras.instance.cameraController.camTarget.transform.position += movement;
+                
                 GameCameras.instance.cameraController.transform.position += movement;
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.1f);
             }
 
         }
-
         private static void RestoreCameraBehaviour()
         {
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (_xOffset != 0f)
-            {
-                GameCameras.instance.cameraController.camTarget.xOffset = _xOffset;
-            }
 
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (_xLookAhead != 0f)
-            {
-                GameCameras.instance.cameraController.camTarget.xLookAhead = _xLookAhead;
+            GameCameras.instance.cameraController.SetMode(CameraController.CameraMode.FOLLOWING);
+            GameCameras.instance.cameraController.PositionToHero(false);
+            Transform transform = GameCameras.instance.cameraController.transform;
+            Vector3 position = transform.position;
+            position += new Vector3(0,0, -38.1f - position.z);
+            transform.position = position;
 
-            }
-            GameCameras.instance.cameraController.camTarget.mode = CameraTarget.TargetMode.FOLLOW_HERO;
-            GameCameras.instance.cameraController.camTarget.stickToHeroY = true;
-            GameCameras.instance.cameraController.camTarget.stickToHeroX = true;
             _frozenCamera = false;
         }
+        
 
         private static void ToggleOn()
         {
             HeroController.instance.vignette.enabled = false;
+            
             GameObject heroControllerGO = HeroController.instance.gameObject;
 
             Color transparent = heroControllerGO.transform.Find("HeroLight").gameObject.GetComponent<SpriteRenderer>().color;
@@ -90,7 +63,7 @@ namespace ScreenshotMachine
             heroControllerGO.GetComponent<tk2dSprite>().color = transparent;
             
             HeroController.instance.damageMode = DamageMode.NO_DAMAGE;
-            heroControllerGO.layer = (int)PhysLayers.CORPSE; //Make enemies not aggro and disable transitions
+            //heroControllerGO.layer = (int)PhysLayers.CORPSE; //Make enemies not aggro and disable transitions
             
             
             _toggled = true;
@@ -112,7 +85,7 @@ namespace ScreenshotMachine
             heroControllerGO.GetComponent<tk2dSprite>().color = a;
             
             HeroController.instance.damageMode = DamageMode.FULL_DAMAGE;
-            heroControllerGO.layer = (int)PhysLayers.PLAYER;
+            //heroControllerGO.layer = (int)PhysLayers.PLAYER;
             
 
             _toggled = false;
@@ -163,7 +136,7 @@ namespace ScreenshotMachine
         public static void HotkeyHandler()
         {
 
-            if (Input.GetKeyDown(KeyToggleCenterLine))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyToggleCenterLine))
             {
                 if (!_lineDrawn)
                 {
@@ -176,47 +149,47 @@ namespace ScreenshotMachine
                 }
                 
             }
-            if (Input.GetKeyDown(KeyMoveCameraRight))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraRight))
             {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0.1f, 0f, 0f), KeyMoveCameraRight));
+                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0.1f, 0f, 0f), ScreenshotMachine.Settings.keyMoveCameraRight));
             }
 
-            if (Input.GetKeyDown(KeyMoveCameraLeft))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraLeft))
             {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(-0.1f, 0f, 0f), KeyMoveCameraLeft));
+                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(-0.1f, 0f, 0f), ScreenshotMachine.Settings.keyMoveCameraLeft));
             }
 
-            if (Input.GetKeyDown(KeyMoveCameraUp))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraUp))
             {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0.1f, 0f), KeyMoveCameraUp));
+                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0.1f, 0f), ScreenshotMachine.Settings.keyMoveCameraUp));
             }
 
-            if (Input.GetKeyDown(KeyMoveCameraDown))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraDown))
             {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, -0.1f, 0f), KeyMoveCameraDown));
+                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, -0.1f, 0f), ScreenshotMachine.Settings.keyMoveCameraDown));
             }
             
-            if (Input.GetKeyDown(KeyMoveCameraOut))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraOut))
             {
                 
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0f, 0.1f), KeyMoveCameraOut));
+                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0f, 0.1f), ScreenshotMachine.Settings.keyMoveCameraOut));
 
             }
             
-            if (Input.GetKeyDown(KeyMoveCameraIn))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraIn))
             {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0f, -0.1f), KeyMoveCameraIn));
+                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0f, -0.1f), ScreenshotMachine.Settings.keyMoveCameraIn));
 
             }
 
-            if (Input.GetKeyDown(KeyRestoreCamera))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyRestoreCamera))
             {
                 RestoreCameraBehaviour();
 
             }
 
 
-            if (Input.GetKeyDown(KeyToggleScreenshotMode))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyToggleScreenshotMode))
             {
                 if (!_toggled)
                 {
@@ -230,7 +203,7 @@ namespace ScreenshotMachine
 
             }
 
-            if (Input.GetKeyDown(KeyToggleBlurPlane))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyToggleBlurPlane))
             {
                 ToggleBlurPlane();
             }
@@ -242,13 +215,15 @@ namespace ScreenshotMachine
                 orig(self);
         }
         
-        public static void Reset(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
+        public static void Reset(On.GameManager.SceneLoadInfo.orig_NotifyFetchComplete origNotifyFetchComplete, GameManager.SceneLoadInfo sceneLoadInfo)
         {
             RestoreCameraBehaviour();            
             ToggleOff();
             if(_blurPlaneOff)
                 ToggleBlurPlane();
-            orig(self, info);
+
+            origNotifyFetchComplete(sceneLoadInfo);
         }
+        
     }
 }
