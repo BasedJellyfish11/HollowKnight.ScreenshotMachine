@@ -62,6 +62,9 @@
         <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>..\..\..\References\UnityEngine.Physics2DModule.dll</HintPath>
         </Reference>
+        <Reference Include="UnityEngine.ScreenCaptureModule">
+          <HintPath>..\..\..\References\UnityEngine.ScreenCaptureModule.dll</HintPath>
+        </Reference>
         <Reference Include="UnityEngine.UI">
             <HintPath>..\..\..\References\UnityEngine.UI.dll</HintPath>
         </Reference>
