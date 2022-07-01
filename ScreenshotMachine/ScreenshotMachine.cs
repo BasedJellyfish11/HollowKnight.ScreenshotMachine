@@ -1,25 +1,21 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using JetBrains.Annotations;
 using Modding;
 using UnityEngine;
 using Logger = Modding.Logger;
 
 namespace ScreenshotMachine
 {
-    public class ScreenshotMachine : Mod
+    [UsedImplicitly]
+    public class ScreenshotMachine : Mod, IGlobalSettings<GlobalSettings>
     {
-        public override ModSettings GlobalSettings
-        {
-            get => Settings;
-            set => Settings = value as GlobalSettings;
-        }
-
-        public static GlobalSettings Settings = new GlobalSettings();
+        public static GlobalSettings Settings = new ();
 
         public override void Initialize()
         {
-            ModHooks.Instance.HeroUpdateHook += CameraHandler.HotkeyHandler;
+            ModHooks.HeroUpdateHook += CameraHandler.HotkeyHandler;
             On.GameManager.SceneLoadInfo.NotifyFetchComplete += CameraHandler.Reset;
             On.CameraController.LateUpdate += CameraHandler.RemoveCameraLogic;
             
@@ -61,6 +57,9 @@ namespace ScreenshotMachine
                 CameraHandler.LineSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
             }
         }
-        
+
+        public void OnLoadGlobal(GlobalSettings s) => Settings = s;
+
+        public GlobalSettings OnSaveGlobal() => Settings;
     }
 }

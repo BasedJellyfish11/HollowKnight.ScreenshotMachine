@@ -7,7 +7,7 @@ using UnityEngine;
 namespace ScreenshotMachine
 {
     [Serializable]
-    public class GlobalSettings : ModSettings
+    public class GlobalSettings
     {
         [JsonConverter(typeof(StringEnumConverter))]
         public KeyCode keyMoveCameraLeft = KeyCode.LeftArrow;
