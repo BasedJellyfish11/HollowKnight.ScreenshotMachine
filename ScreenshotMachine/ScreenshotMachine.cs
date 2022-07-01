@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using JetBrains.Annotations;
 using Modding;
 using UnityEngine;
+using Vasi;
 using Logger = Modding.Logger;
 using UObject = UnityEngine.Object;
 
@@ -30,21 +30,15 @@ namespace ScreenshotMachine
             LoadLines();
         }
 
-        public new static void Log(object message)
-        {
-            Logger.Log("[ScreenshotMachine] - " + message );
-        }
+        public new static void Log(object message) => Logger.Log("[ScreenshotMachine] - " + message );
 
-        public override string GetVersion()
-        {
-            return "1.3";
-        }
+        public override string GetVersion() => VersionUtil.GetVersion<ScreenshotMachine>();
 
         private static void LoadLines()
         {
-            Assembly asm = new StackFrame(1, false).GetMethod()?.DeclaringType?.Assembly;
+            Assembly asm = Assembly.GetExecutingAssembly();
 
-            using Stream stream = asm?.GetManifestResourceStream("ScreenshotMachine.Images.Lines.png");
+            using Stream stream = asm.GetManifestResourceStream("ScreenshotMachine.Images.Lines.png");
             
             if (stream == null)
                 return;

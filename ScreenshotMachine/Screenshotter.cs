@@ -27,7 +27,7 @@ public class Screenshotter : MonoBehaviour
     {
         while (true)
         {
-            if (!Input.GetKeyDown(ScreenshotMachine.Settings.CaptureButton))
+            if (!Input.GetKeyDown(ScreenshotMachine.Settings.CaptureScreenshotKey))
             {
                 yield return null;
                 

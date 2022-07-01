@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GlobalEnums;
+using Modding;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -10,8 +11,7 @@ namespace ScreenshotMachine
 {
     public static class ParticleStopper
     {
-
-        private static readonly Dictionary<ParticleSystem, float> LoopingParticles = new Dictionary<ParticleSystem,float>();
+        private static readonly Dictionary<ParticleSystem, float> LoopingParticles = new();
 
         public static NonBouncer CoroutineStarter;
 
@@ -22,8 +22,6 @@ namespace ScreenshotMachine
             PhysLayers.WATER,
             PhysLayers.ITEM
         };
-        
-        
 
         /* Not needed anymore now that I just scan for the ParticleController type, but these are the names of the particles that are part of the camera and not the scene
          * Might be useful in the future
@@ -49,73 +47,78 @@ namespace ScreenshotMachine
         };
         */
 
-
-        public static void CallFreezeParticles(Scene arg0, LoadSceneMode loadSceneMode)
+        public static void CallFreezeParticles(Scene scene, LoadSceneMode loadSceneMode)
         {
-
-            if(arg0.name == GameManager.GetBaseSceneName(arg0.name))
+            if (scene.name == GameManager.GetBaseSceneName(scene.name))
                 CoroutineStarter.StartCoroutine(FindParticles());
         }
 
         private static IEnumerator FindParticles()
         {
-            yield return null; // Wait 1 frame wait for sceneLoaded hook
-            
+            // Wait 1 frame wait for sceneLoaded hook
+            yield return null;
+
             LoopingParticles.Clear();
-            
-            ScreenshotMachine.Log("Finding particles for scene " + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
-            
-            foreach (ParticleSystem particleSystem in Object.FindObjectsOfType<ParticleSystem>().Where(particle => particle.isPlaying 
-                                                                                                                   && !IsParentedToLiving(particle.transform)
-                                                                                                                   && LayersToStop.Contains((PhysLayers)particle.gameObject.layer)))
+
+            ScreenshotMachine.Log
+                ("Finding particles for scene " + UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+
+            foreach (ParticleSystem particleSystem in Object.FindObjectsOfType<ParticleSystem>().Where
+            (
+                particle => particle.isPlaying
+                    && !IsParentedToLiving(particle.transform)
+                    && LayersToStop.Contains((PhysLayers) particle.gameObject.layer)
+            ))
             {
-                if(particleSystem == null)
+                if (particleSystem == null)
                     continue;
+                
                 LoopingParticles.Add(particleSystem, particleSystem.emission.rateOverTimeMultiplier);
             }
-            
+
             CoroutineStarter.StartCoroutine(StopParticles());
-            
         }
 
         private static IEnumerator StopParticles()
         {
-            
-            foreach (ParticleSystem particles in LoopingParticles.Keys)
+            foreach (ParticleSystem particles in LoopingParticles.Keys.Where(particles => particles != null))
             {
-                if (particles == null)
-                    continue;
                 ScreenshotMachine.Log("Stopping particle " + particles.name);
                 particles.Stop();
-
             }
 
-            yield return new WaitForSeconds(ScreenshotMachine.Settings.stoppedTime); // Wait the stopped time
+            yield return new WaitForSeconds(ScreenshotMachine.Settings.StoppedTime); // Wait the stopped time
 
             foreach (ParticleSystem key in LoopingParticles.Keys)
             {
-                if(key == null)
+                if (key == null)
                     continue;
-                
-                ParticleSystem.Particle[] particleSystems = new ParticleSystem.Particle[key.particleCount];
+
+                var particleSystems = new ParticleSystem.Particle[key.particleCount];
                 key.GetParticles(particleSystems);
+                
                 float extraWait = 0f;
+                
                 foreach (ParticleSystem.Particle particle in particleSystems)
                 {
                     if (particle.remainingLifetime > 0f && particle.remainingLifetime > extraWait)
-                    {
                         extraWait = particle.remainingLifetime;
-                    }
                 }
-                
+
                 // ReSharper disable once CompareOfFloatsByEqualityOperator
-                if(extraWait != 0f)
-                    ScreenshotMachine.Log($"The established stopped time wasn't enough for all the particles to disappear! Waiting an extra {extraWait} seconds");
+                if (extraWait != 0f)
+                {
+                    ScreenshotMachine.Log
+                    (
+                        "The established stopped time wasn't enough for all the particles to disappear!"
+                        + $" Waiting an extra {extraWait} seconds"
+                    );
+                }
+
                 yield return new WaitForSeconds(extraWait);
-                
+
                 ParticleSystem.EmissionModule emissionModule = key.emission;
                 emissionModule.rateOverTimeMultiplier = 0f;
-                
             }
 
             CoroutineStarter.StartCoroutine(StartParticles());
@@ -126,88 +129,86 @@ namespace ScreenshotMachine
             ScreenshotMachine.Log("Starting particles back up");
 
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (ScreenshotMachine.Settings.displayTime == 0f)
+            if (ScreenshotMachine.Settings.DisplayTime == 0f)
                 yield break;
 
             float startTime = Time.time;
 
-            foreach (ParticleSystem key in LoopingParticles.Keys)
-            { 
-                if(key == null)
-                    continue;
-                key.time = 0f;
-                if (ScreenshotMachine.Settings.alwaysUseSameSeedForParticles)
+            foreach (ParticleSystem key in LoopingParticles.Keys.Where(key => key != null))
+            {
+                if (ScreenshotMachine.Settings.AlwaysUseSameSeedForParticles)
                     key.randomSeed = 1;
+
+                key.time = 0f;
                 key.Play();
             }
-            
+
             float t = 0f;
+
             while (t <= 1f)
             {
-                foreach (KeyValuePair<ParticleSystem, float> pair in LoopingParticles)
+                foreach ((ParticleSystem system, float max) in LoopingParticles.Where(pair => pair.Key != null))
                 {
-                    if (pair.Key == null)
-                        continue;
+                    if (!system.isPlaying)
+                        system.Play();
 
-                    if (!pair.Key.isPlaying)
-                        pair.Key.Play();
-
-                    ParticleSystem.EmissionModule emissionModule = pair.Key.emission;
-                    emissionModule.rateOverTimeMultiplier = Mathf.Lerp(0, pair.Value, t);
+                    ParticleSystem.EmissionModule emissionModule = system.emission;
+                    emissionModule.rateOverTimeMultiplier = Mathf.Lerp(0, max, t);
                 }
 
-                t = (Time.time - startTime) / (ScreenshotMachine.Settings.displayTime);
+                t = (Time.time - startTime) / (ScreenshotMachine.Settings.DisplayTime);
                 yield return null;
             }
 
-            foreach (KeyValuePair<ParticleSystem, float> pair in LoopingParticles)
+            foreach ((ParticleSystem system, float rate) in LoopingParticles)
             {
                 ScreenshotMachine.Log("End of loop");
-                if(pair.Key == null)
+
+                if (system == null)
                     continue;
-                
-                ParticleSystem.EmissionModule emissionModule = pair.Key.emission;
-                
-                emissionModule.rateOverTimeMultiplier = pair.Value;
+
+                ParticleSystem.EmissionModule emissionModule = system.emission;
+
+                emissionModule.rateOverTimeMultiplier = rate;
             }
 
             CoroutineStarter.StartCoroutine(StopParticles());
         }
 
-
-        
-        
-        
-        public static void StopFreeze(On.GameManager.SceneLoadInfo.orig_NotifyFetchComplete origNotifyFetchComplete, GameManager.SceneLoadInfo sceneLoadInfo)
+        public static void StopFreeze
+        (
+            On.GameManager.SceneLoadInfo.orig_NotifyFetchComplete orig,
+            GameManager.SceneLoadInfo sceneLoadInfo
+        )
         {
             CoroutineStarter.StopAllCoroutines();
-            
-            foreach (KeyValuePair<ParticleSystem, float> pair in LoopingParticles)
+
+            foreach ((ParticleSystem system, float rate) in LoopingParticles.Where(pair => pair.Key != null))
             {
-                if (pair.Key == null)
-                    continue;
-                pair.Key.Play(); // Play the particles in case they were off due to the class stopping them
-                ParticleSystem.EmissionModule emissionModule = pair.Key.emission;
-                emissionModule.rateOverTimeMultiplier = pair.Value;
+                // Play the particles in case they were off due to the class stopping them
+                system.Play();
+
+                ParticleSystem.EmissionModule emissionModule = system.emission;
+                emissionModule.rateOverTimeMultiplier = rate;
             }
-            
+
             LoopingParticles.Clear();
 
-            
-            origNotifyFetchComplete(sceneLoadInfo);
+            orig(sceneLoadInfo);
         }
 
         private static bool IsParentedToLiving(Transform objectToCheck)
         {
-            while (objectToCheck != null && objectToCheck.name != "Knight" && objectToCheck.gameObject.GetComponent<HealthManager>() == null)
+            while (
+                objectToCheck != null
+                && objectToCheck.name != "Knight"
+                && objectToCheck.gameObject.GetComponent<HealthManager>() == null
+            )
             {
                 objectToCheck = objectToCheck.parent;
-                
             }
 
             return objectToCheck != null;
         }
-
     }
-    
 }

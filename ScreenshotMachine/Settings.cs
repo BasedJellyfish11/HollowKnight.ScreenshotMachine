@@ -3,43 +3,62 @@ using Modding;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ScreenshotMachine
 {
     [Serializable]
     public class GlobalSettings
     {
+        [FormerlySerializedAs("keyMoveCameraLeft")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyMoveCameraLeft = KeyCode.LeftArrow;
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyMoveCameraRight = KeyCode.RightArrow;
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyMoveCameraUp = KeyCode.UpArrow;
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyMoveCameraDown = KeyCode.DownArrow;
+        public KeyCode CameraLeftKey = KeyCode.LeftArrow;
         
+        [FormerlySerializedAs("keyMoveCameraRight")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyMoveCameraIn = KeyCode.Keypad6;
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyMoveCameraOut = KeyCode.Keypad4;
+        public KeyCode CameraRightKey = KeyCode.RightArrow;
         
+        [FormerlySerializedAs("keyMoveCameraUp")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyToggleScreenshotMode = KeyCode.Pause;
+        public KeyCode CameraUpKey = KeyCode.UpArrow;
         
+        [FormerlySerializedAs("keyMoveCameraDown")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyToggleBlurPlane = KeyCode.R;
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyToggleCenterLine = KeyCode.E;
+        public KeyCode CameraDownKey = KeyCode.DownArrow;
         
+        [FormerlySerializedAs("keyMoveCameraIn")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode keyRestoreCamera = KeyCode.Q;
+        public KeyCode CameraInKey = KeyCode.Keypad6;
+        [FormerlySerializedAs("keyMoveCameraOut")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public KeyCode CameraOutKey = KeyCode.Keypad4;
+        
+        [FormerlySerializedAs("keyToggleScreenshotMode")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public KeyCode ToggleScreenshotModeKey = KeyCode.Pause;
+        
+        [FormerlySerializedAs("keyToggleBlurPlane")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public KeyCode BlurPlaneToggleKey = KeyCode.R;
+        [FormerlySerializedAs("keyToggleCenterLine")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public KeyCode ToggleCenterLineKey = KeyCode.E;
+        
+        [FormerlySerializedAs("keyRestoreCamera")]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public KeyCode RestoreCameraKey = KeyCode.Q;
 
+        [FormerlySerializedAs("CaptureButton")]
         [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode CaptureButton = KeyCode.F11;
+        public KeyCode CaptureScreenshotKey = KeyCode.F11;
         
-        public float displayTime = 30f;
-        public float stoppedTime = 10f;
-        public bool alwaysUseSameSeedForParticles;
+        [FormerlySerializedAs("displayTime")]
+        public float DisplayTime = 30f;
+        [FormerlySerializedAs("stoppedTime")]
+        public float StoppedTime = 10f;
+        
+        [FormerlySerializedAs("alwaysUseSameSeedForParticles")]
+        public bool AlwaysUseSameSeedForParticles;
 
         public int CaptureFactor = 2;
         

@@ -1,7 +1,9 @@
 ﻿using System.Collections;
+using System.Linq;
 using GlobalEnums;
 using Modding;
 using UnityEngine;
+
 namespace ScreenshotMachine
 {
     public static class CameraHandler
@@ -9,17 +11,14 @@ namespace ScreenshotMachine
         private static bool _toggled;
         private static bool _frozenCamera;
         private static GameObject _blurPlane;
-        
-        private static bool _lineDrawn;
-        private static bool _blurPlaneOff;
-        
-        
-        public static Sprite LineSprite { get; set; }
 
+        private static bool _lineDrawn;
+        private static bool _blurPlaneOn;
+
+        public static Sprite LineSprite { get; set; }
 
         private static IEnumerator MoveCamera(Vector3 movement, KeyCode keyPressed)
         {
-
             if (!_frozenCamera)
             {
                 GameCameras.instance.cameraController.FreezeInPlace();
@@ -28,185 +27,135 @@ namespace ScreenshotMachine
 
             while (Input.GetKey(keyPressed))
             {
-                
                 GameCameras.instance.cameraController.transform.position += movement;
                 yield return new WaitForSeconds(0.1f);
             }
-
         }
+
         private static void RestoreCameraBehaviour()
         {
+            var camCtrl = GameCameras.instance.cameraController;
 
-            GameCameras.instance.cameraController.SetMode(CameraController.CameraMode.FOLLOWING);
-            GameCameras.instance.cameraController.PositionToHero(false);
-            Transform transform = GameCameras.instance.cameraController.transform;
-            Vector3 position = transform.position;
-            position += new Vector3(0,0, -38.1f - position.z);
-            transform.position = position;
+            camCtrl.SetMode(CameraController.CameraMode.FOLLOWING);
+            camCtrl.PositionToHero(false);
+            camCtrl.transform.position += new Vector3(0, 0, -38.1f - camCtrl.transform.GetPositionZ());
 
             _frozenCamera = false;
         }
-        
 
         private static void ToggleOn()
         {
             HeroController.instance.vignette.enabled = false;
-            
-            GameObject heroControllerGO = HeroController.instance.gameObject;
 
-            Color transparent = heroControllerGO.transform.Find("HeroLight").gameObject.GetComponent<SpriteRenderer>().color;
-            transparent.a = 0f;
-            heroControllerGO.transform.Find("HeroLight").gameObject.GetComponent<SpriteRenderer>().color = transparent;
-            
+            GameObject hero = HeroController.instance.gameObject;
+
+            var light = hero.transform.Find("HeroLight");
+            var sr = light.GetComponent<SpriteRenderer>();
+
+            sr.color = sr.color with { a = 0f };
+
             GameCameras.instance.hudCanvas.gameObject.SetActive(false);
-            
-            heroControllerGO.GetComponent<tk2dSprite>().color = transparent;
-            
+
+            hero.GetComponent<tk2dSprite>().color = sr.color;
+
             HeroController.instance.damageMode = DamageMode.NO_DAMAGE;
-            //heroControllerGO.layer = (int)PhysLayers.CORPSE; //Make enemies not aggro and disable transitions
-            
-            
+
             _toggled = true;
         }
 
         private static void ToggleOff()
         {
             HeroController.instance.vignette.enabled = true;
-            
+
             GameObject heroControllerGO = HeroController.instance.gameObject;
-            
+
             Color a = heroControllerGO.transform.Find("HeroLight").gameObject.GetComponent<SpriteRenderer>().color;
             a.a = 0.7f;
             heroControllerGO.transform.Find("HeroLight").gameObject.GetComponent<SpriteRenderer>().color = a;
-            
+
             GameCameras.instance.hudCanvas.gameObject.SetActive(true);
-            
+
             a.a = 1f;
             heroControllerGO.GetComponent<tk2dSprite>().color = a;
-            
+
             HeroController.instance.damageMode = DamageMode.FULL_DAMAGE;
-            //heroControllerGO.layer = (int)PhysLayers.PLAYER;
-            
 
             _toggled = false;
         }
 
         private static void ToggleBlurPlane()
         {
-            if (!_blurPlaneOff)
-            {
-                _blurPlane = GameObject.Find("BlurPlane");
-                if (_blurPlane != null)
-                    _blurPlane.SetActive(false);
-                _blurPlaneOff = true;
-            }
-
-            else
-            {
-                if(_blurPlane!=null)
-                    _blurPlane.SetActive(true);
-                _blurPlaneOff = false;
-            }
+            _blurPlaneOn = !_blurPlaneOn;
+            
+            // Unity do not break (??) challenge (very hard)
+            _blurPlane = _blurPlane ? _blurPlane : GameObject.Find("BlurPlane");
+            
+            if (_blurPlane != null)
+                _blurPlane.SetActive(_blurPlaneOn);
         }
 
         private static IEnumerator DrawCenterLines()
         {
-
             ScreenshotMachine.Log("Drawing middle intersection lines...");
 
             GameObject lineCanvas = CanvasUtil.CreateCanvas(RenderMode.ScreenSpaceCamera, new Vector2(1920, 1080));
 
+            GameObject lines = CanvasUtil.CreateImagePanel
+            (
+                lineCanvas,
+                LineSprite,
+                new CanvasUtil.RectData(Vector2.zero, Vector2.zero, Vector2.zero, Vector2.one)
+            );
 
-            GameObject lines = CanvasUtil.CreateImagePanel(lineCanvas, LineSprite,
-                new CanvasUtil.RectData(Vector2.zero, Vector2.zero, Vector2.zero, Vector2.one));
-
-            lines.gameObject.AddComponent<CanvasGroup>();
-            CanvasGroup group = lines.gameObject.GetComponent<CanvasGroup>();
+            var group = lines.gameObject.AddComponent<CanvasGroup>();
             group.interactable = false;
             group.blocksRaycasts = false;
-            
-            
 
-            yield return new WaitUntil(()=> !_lineDrawn);
+            yield return new WaitUntil(() => !_lineDrawn);
+
             ScreenshotMachine.Log("Destroying middle intersection lines...");
             Object.Destroy(lines);
-
         }
 
         public static void HotkeyHandler()
         {
-
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyToggleCenterLine))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.ToggleCenterLineKey))
             {
-                if (!_lineDrawn)
-                {
-                    _lineDrawn = true;
+                _lineDrawn = !_lineDrawn;
+                
+                if (_lineDrawn)
                     GameManager.instance.StartCoroutine(DrawCenterLines());
-                }
-                else
-                {
-                    _lineDrawn = false;
-                }
-                
-            }
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraRight))
-            {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0.1f, 0f, 0f), ScreenshotMachine.Settings.keyMoveCameraRight));
             }
 
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraLeft))
-            {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(-0.1f, 0f, 0f), ScreenshotMachine.Settings.keyMoveCameraLeft));
-            }
+            var settings = ScreenshotMachine.Settings;
 
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraUp))
+            (Vector3 offset, KeyCode key)[] pairs =
             {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0.1f, 0f), ScreenshotMachine.Settings.keyMoveCameraUp));
-            }
+                (Vector3.zero with { x = 0.1f }, settings.CameraRightKey),
+                (Vector3.zero with { x = -0.1f }, settings.CameraLeftKey),
+                (Vector3.zero with { y = 0.1f }, settings.CameraUpKey),
+                (Vector3.zero with { y = -0.1f }, settings.CameraDownKey),
+                (Vector3.zero with { z = 0.1f }, settings.CameraOutKey),
+                (Vector3.zero with { z = -0.1f }, settings.CameraInKey)
+            };
 
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraDown))
-            {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, -0.1f, 0f), ScreenshotMachine.Settings.keyMoveCameraDown));
-            }
-            
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraOut))
-            {
-                
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0f, 0.1f), ScreenshotMachine.Settings.keyMoveCameraOut));
+            foreach ((Vector3 offset, KeyCode key) in pairs.Where(x => Input.GetKeyDown(x.key)))
+                GameManager.instance.StartCoroutine(MoveCamera(offset, key));
 
-            }
-            
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyMoveCameraIn))
-            {
-                GameManager.instance.StartCoroutine(MoveCamera(new Vector3(0f, 0f, -0.1f), ScreenshotMachine.Settings.keyMoveCameraIn));
-
-            }
-
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyRestoreCamera))
-            {
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.RestoreCameraKey))
                 RestoreCameraBehaviour();
 
-            }
 
-
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyToggleScreenshotMode))
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.ToggleScreenshotModeKey))
             {
                 if (!_toggled)
-                {
                     ToggleOn();
-                }
-
                 else
-                {
                     ToggleOff();
-                }
-
             }
 
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.keyToggleBlurPlane))
-            {
+            if (Input.GetKeyDown(ScreenshotMachine.Settings.BlurPlaneToggleKey))
                 ToggleBlurPlane();
-            }
         }
 
         public static void RemoveCameraLogic(On.CameraController.orig_LateUpdate orig, CameraController self)
@@ -214,16 +163,20 @@ namespace ScreenshotMachine
             if (!_frozenCamera)
                 orig(self);
         }
-        
-        public static void Reset(On.GameManager.SceneLoadInfo.orig_NotifyFetchComplete origNotifyFetchComplete, GameManager.SceneLoadInfo sceneLoadInfo)
+
+        public static void Reset
+        (
+            On.GameManager.SceneLoadInfo.orig_NotifyFetchComplete orig,
+            GameManager.SceneLoadInfo sceneLoadInfo
+        )
         {
-            RestoreCameraBehaviour();            
+            RestoreCameraBehaviour();
             ToggleOff();
-            if(_blurPlaneOff)
+
+            if (_blurPlaneOn)
                 ToggleBlurPlane();
 
-            origNotifyFetchComplete(sceneLoadInfo);
+            orig(sceneLoadInfo);
         }
-        
     }
 }
