@@ -2,8 +2,8 @@
     <PropertyGroup>
         <ProjectGuid>{F039FA1D-A12D-4672-BF0A-60CF7900EE21}</ProjectGuid>
         <TargetFramework>net472</TargetFramework>
-        <AssemblyTitle>QoL</AssemblyTitle>
-        <AssemblyVersion>4.7.0</AssemblyVersion>
+        <AssemblyTitle>ScreenshotMachine</AssemblyTitle>
+        <AssemblyVersion>2.0.0</AssemblyVersion>
         <Product>QoL</Product>
         <OutputPath>bin\$(Configuration)\</OutputPath>
         <LangVersion>latest</LangVersion>
