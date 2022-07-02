@@ -7,6 +7,7 @@
         <Product>QoL</Product>
         <OutputPath>bin\$(Configuration)\</OutputPath>
         <LangVersion>latest</LangVersion>
+		<HKModdingPath>D:\HKmod\1.5Moddingapi</HKModdingPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,72 +16,75 @@
 
     <ItemGroup>
         <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\Assembly-CSharp.dll</HintPath>
+            <HintPath>$(HKModdingPath)\Assembly-CSharp.dll</HintPath>
         </Reference>
         <Reference Include="MMHOOK_Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\MMHOOK_Assembly-CSharp.dll</HintPath>
+            <HintPath>$(HKModdingPath)\MMHOOK_Assembly-CSharp.dll</HintPath>
         </Reference>
         <Reference Include="MMHOOK_PlayMaker, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\MMHOOK_PlayMaker.dll</HintPath>
+            <HintPath>$(HKModdingPath)\MMHOOK_PlayMaker.dll</HintPath>
         </Reference>
         <Reference Include="Mono.Cecil, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e">
-            <HintPath>..\..\..\References\Mono.Cecil.dll</HintPath>
+            <HintPath>$(HKModdingPath)\Mono.Cecil.dll</HintPath>
         </Reference>
         <Reference Include="MonoMod.RuntimeDetour, Version=21.4.29.1, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\MonoMod.RuntimeDetour.dll</HintPath>
+            <HintPath>$(HKModdingPath)\MonoMod.RuntimeDetour.dll</HintPath>
         </Reference>
         <Reference Include="MonoMod.Utils, Version=21.4.29.1, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\MonoMod.Utils.dll</HintPath>
+            <HintPath>$(HKModdingPath)\MonoMod.Utils.dll</HintPath>
         </Reference>
         <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\Newtonsoft.Json.dll</HintPath>
+            <HintPath>$(HKModdingPath)\Newtonsoft.Json.dll</HintPath>
         </Reference>
         <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\PlayMaker.dll</HintPath>
+            <HintPath>$(HKModdingPath)\PlayMaker.dll</HintPath>
+        </Reference>
+        <Reference Include="Satchel">
+          <HintPath>..\..\1.5Moddingapi\Satchel.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine">
-            <HintPath>..\..\..\References\UnityEngine.dll</HintPath>
+            <HintPath>$(HKModdingPath)\UnityEngine.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.AudioModule.dll</HintPath>
+            <HintPath>$(HKModdingPath)\UnityEngine.AudioModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.CoreModule.dll</HintPath>
+            <HintPath>$(HKModdingPath)\UnityEngine.CoreModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.ImageConversionModule">
-          <HintPath>..\..\..\References\UnityEngine.ImageConversionModule.dll</HintPath>
+          <HintPath>$(HKModdingPath)\UnityEngine.ImageConversionModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.InputLegacyModule">
-          <HintPath>..\..\..\References\UnityEngine.InputLegacyModule.dll</HintPath>
+          <HintPath>$(HKModdingPath)\UnityEngine.InputLegacyModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.JSONSerializeModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.JSONSerializeModule.dll</HintPath>
+            <HintPath>$(HKModdingPath)\UnityEngine.JSONSerializeModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.ParticleSystemModule">
-          <HintPath>..\..\..\References\UnityEngine.ParticleSystemModule.dll</HintPath>
+          <HintPath>$(HKModdingPath)\UnityEngine.ParticleSystemModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.Physics2DModule.dll</HintPath>
+            <HintPath>$(HKModdingPath)\UnityEngine.Physics2DModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.ScreenCaptureModule">
-          <HintPath>..\..\..\References\UnityEngine.ScreenCaptureModule.dll</HintPath>
+          <HintPath>$(HKModdingPath)\UnityEngine.ScreenCaptureModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.UI">
-            <HintPath>..\..\..\References\UnityEngine.UI.dll</HintPath>
+            <HintPath>$(HKModdingPath)\UnityEngine.UI.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.UIElementsModule.dll</HintPath>
+            <HintPath>$(HKModdingPath)\UnityEngine.UIElementsModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.UIModule.dll</HintPath>
+            <HintPath>$(HKModdingPath)\UnityEngine.UIModule.dll</HintPath>
         </Reference>
         <Reference Include="Vasi, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\Mods\Vasi.dll</HintPath>
+            <HintPath>$(HKModdingPath)\Vasi.dll</HintPath>
         </Reference>
     </ItemGroup>
 
     <Target Name="CopyMod" AfterTargets="PostBuildEvent">
-        <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb" DestinationFolder="D:/Steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/Mods/$(TargetName)" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb" DestinationFolder="D:\Steamself\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\$(TargetName)" SkipUnchangedFiles="true" />
     </Target>
 
     <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">

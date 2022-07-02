@@ -3,7 +3,7 @@ using System.Linq;
 using GlobalEnums;
 using Modding;
 using UnityEngine;
-
+using InControl;
 namespace ScreenshotMachine
 {
     public static class CameraHandler
@@ -17,7 +17,7 @@ namespace ScreenshotMachine
 
         public static Sprite LineSprite { get; set; }
 
-        private static IEnumerator MoveCamera(Vector3 movement, KeyCode keyPressed)
+        private static IEnumerator MoveCamera(Vector3 movement, PlayerAction action)
         {
             if (!_frozenCamera)
             {
@@ -25,10 +25,10 @@ namespace ScreenshotMachine
                 _frozenCamera = true;
             }
 
-            while (Input.GetKey(keyPressed))
+            while (action.IsPressed)
             {
                 GameCameras.instance.cameraController.transform.position += movement;
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.005f);
             }
         }
 
@@ -119,7 +119,7 @@ namespace ScreenshotMachine
 
         public static void HotkeyHandler()
         {
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.ToggleCenterLineKey))
+            if (ScreenshotMachine.Settings.keyBinds.ToggleCenterLineKey.WasPressed)
             {
                 _lineDrawn = !_lineDrawn;
                 
@@ -129,24 +129,24 @@ namespace ScreenshotMachine
 
             var settings = ScreenshotMachine.Settings;
 
-            (Vector3 offset, KeyCode key)[] pairs =
+            (Vector3 offset, PlayerAction action)[] pairs =
             {
-                (Vector3.zero with { x = 0.1f }, settings.CameraRightKey),
-                (Vector3.zero with { x = -0.1f }, settings.CameraLeftKey),
-                (Vector3.zero with { y = 0.1f }, settings.CameraUpKey),
-                (Vector3.zero with { y = -0.1f }, settings.CameraDownKey),
-                (Vector3.zero with { z = 0.1f }, settings.CameraOutKey),
-                (Vector3.zero with { z = -0.1f }, settings.CameraInKey)
+                (Vector3.zero with { x = 0.1f }, settings.keyBinds.CameraRightKey),
+                (Vector3.zero with { x = -0.1f }, settings.keyBinds.CameraLeftKey),
+                (Vector3.zero with { y = 0.1f }, settings.keyBinds.CameraUpKey),
+                (Vector3.zero with { y = -0.1f }, settings.keyBinds.CameraDownKey),
+                (Vector3.zero with { z = 0.1f }, settings.keyBinds.CameraOutKey),
+                (Vector3.zero with { z = -0.1f }, settings.keyBinds.CameraInKey)
             };
 
-            foreach ((Vector3 offset, KeyCode key) in pairs.Where(x => Input.GetKeyDown(x.key)))
-                GameManager.instance.StartCoroutine(MoveCamera(offset, key));
+            foreach ((Vector3 offset, PlayerAction action) in pairs.Where(x => x.action.WasPressed))
+                GameManager.instance.StartCoroutine(MoveCamera(offset, action));
 
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.RestoreCameraKey))
+            if (ScreenshotMachine.Settings.keyBinds.RestoreCameraKey.WasPressed)
                 RestoreCameraBehaviour();
 
 
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.ToggleScreenshotModeKey))
+            if (ScreenshotMachine.Settings.keyBinds.ToggleScreenshotModeKey.WasPressed)
             {
                 if (!_toggled)
                     ToggleOn();
@@ -154,7 +154,7 @@ namespace ScreenshotMachine
                     ToggleOff();
             }
 
-            if (Input.GetKeyDown(ScreenshotMachine.Settings.BlurPlaneToggleKey))
+            if (ScreenshotMachine.Settings.keyBinds.BlurPlaneToggleKey.WasPressed)
                 ToggleBlurPlane();
         }
 
