@@ -11,8 +11,9 @@ namespace ScreenshotMachine
     [Serializable]
     public class GlobalSettings
     {
-        [JsonConverter(typeof(PlayerActionSetConverter))]
-        public KeyBinds keyBinds = new KeyBinds();
+            [JsonConverter(typeof(PlayerActionSetConverter))]
+            [FormerlySerializedAs("keyBinds")]
+            public KeyBinds KeyBinds = new KeyBinds();
             [FormerlySerializedAs("displayTime")]
             public float DisplayTime = 30f;
             [FormerlySerializedAs("stoppedTime")]
@@ -39,7 +40,7 @@ namespace ScreenshotMachine
         public PlayerAction ToggleCenterLineKey;
         public PlayerAction RestoreCameraKey;
         public PlayerAction CaptureButton;
-
+        public PlayerAction CameraSpeedUp;
         public KeyBinds()
         {
             CameraLeftKey = CreatePlayerAction("Camera Left");
@@ -53,6 +54,7 @@ namespace ScreenshotMachine
             ToggleCenterLineKey = CreatePlayerAction("Toggle CenterLine");
             RestoreCameraKey = CreatePlayerAction("Restore Camera");
             CaptureButton = CreatePlayerAction("Capture Button");
+            CameraSpeedUp = CreatePlayerAction("Camera Speed Up");
         }
     }
 }

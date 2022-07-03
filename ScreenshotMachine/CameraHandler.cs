@@ -28,7 +28,7 @@ namespace ScreenshotMachine
             while (action.IsPressed)
             {
                 GameCameras.instance.cameraController.transform.position += movement;
-                yield return new WaitForSeconds(0.005f);
+                yield return new WaitForSeconds(ScreenshotMachine.Settings.KeyBinds.CameraSpeedUp.IsPressed?0.005f:0.1f);
             }
         }
 
@@ -119,7 +119,7 @@ namespace ScreenshotMachine
 
         public static void HotkeyHandler()
         {
-            if (ScreenshotMachine.Settings.keyBinds.ToggleCenterLineKey.WasPressed)
+            if (ScreenshotMachine.Settings.KeyBinds.ToggleCenterLineKey.WasPressed)
             {
                 _lineDrawn = !_lineDrawn;
                 
@@ -131,22 +131,22 @@ namespace ScreenshotMachine
 
             (Vector3 offset, PlayerAction action)[] pairs =
             {
-                (Vector3.zero with { x = 0.1f }, settings.keyBinds.CameraRightKey),
-                (Vector3.zero with { x = -0.1f }, settings.keyBinds.CameraLeftKey),
-                (Vector3.zero with { y = 0.1f }, settings.keyBinds.CameraUpKey),
-                (Vector3.zero with { y = -0.1f }, settings.keyBinds.CameraDownKey),
-                (Vector3.zero with { z = 0.1f }, settings.keyBinds.CameraOutKey),
-                (Vector3.zero with { z = -0.1f }, settings.keyBinds.CameraInKey)
+                (Vector3.zero with { x = 0.1f }, settings.KeyBinds.CameraRightKey),
+                (Vector3.zero with { x = -0.1f }, settings.KeyBinds.CameraLeftKey),
+                (Vector3.zero with { y = 0.1f }, settings.KeyBinds.CameraUpKey),
+                (Vector3.zero with { y = -0.1f }, settings.KeyBinds.CameraDownKey),
+                (Vector3.zero with { z = 0.1f }, settings.KeyBinds.CameraOutKey),
+                (Vector3.zero with { z = -0.1f }, settings.KeyBinds.CameraInKey)
             };
 
             foreach ((Vector3 offset, PlayerAction action) in pairs.Where(x => x.action.WasPressed))
                 GameManager.instance.StartCoroutine(MoveCamera(offset, action));
 
-            if (ScreenshotMachine.Settings.keyBinds.RestoreCameraKey.WasPressed)
+            if (ScreenshotMachine.Settings.KeyBinds.RestoreCameraKey.WasPressed)
                 RestoreCameraBehaviour();
 
 
-            if (ScreenshotMachine.Settings.keyBinds.ToggleScreenshotModeKey.WasPressed)
+            if (ScreenshotMachine.Settings.KeyBinds.ToggleScreenshotModeKey.WasPressed)
             {
                 if (!_toggled)
                     ToggleOn();
@@ -154,7 +154,7 @@ namespace ScreenshotMachine
                     ToggleOff();
             }
 
-            if (ScreenshotMachine.Settings.keyBinds.BlurPlaneToggleKey.WasPressed)
+            if (ScreenshotMachine.Settings.KeyBinds.BlurPlaneToggleKey.WasPressed)
                 ToggleBlurPlane();
         }
 
