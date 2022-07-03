@@ -10,7 +10,7 @@ using UObject = UnityEngine.Object;
 namespace ScreenshotMachine
 {
     [UsedImplicitly]
-    public class ScreenshotMachine : Mod, IGlobalSettings<GlobalSettings>
+    public class ScreenshotMachine : Mod, IGlobalSettings<GlobalSettings>,ICustomMenuMod
     {
         public static GlobalSettings Settings = new ();
 
@@ -33,6 +33,10 @@ namespace ScreenshotMachine
         public new static void Log(object message) => Logger.Log("[ScreenshotMachine] - " + message );
 
         public override string GetVersion() => VersionUtil.GetVersion<ScreenshotMachine>();
+
+        public bool ToggleButtonInsideMenu => false;
+
+        public MenuScreen GetMenuScreen(MenuScreen s, ModToggleDelegates? modToggle) => ModMenu.GetMenu(s);
 
         private static void LoadLines()
         {

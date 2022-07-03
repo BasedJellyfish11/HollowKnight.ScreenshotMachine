@@ -4,65 +4,57 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UnityEngine;
 using UnityEngine.Serialization;
-
+using Modding.Converters;
+using InControl;
 namespace ScreenshotMachine
 {
     [Serializable]
     public class GlobalSettings
     {
-        [FormerlySerializedAs("keyMoveCameraLeft")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode CameraLeftKey = KeyCode.LeftArrow;
-        
-        [FormerlySerializedAs("keyMoveCameraRight")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode CameraRightKey = KeyCode.RightArrow;
-        
-        [FormerlySerializedAs("keyMoveCameraUp")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode CameraUpKey = KeyCode.UpArrow;
-        
-        [FormerlySerializedAs("keyMoveCameraDown")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode CameraDownKey = KeyCode.DownArrow;
-        
-        [FormerlySerializedAs("keyMoveCameraIn")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode CameraInKey = KeyCode.Keypad6;
-        [FormerlySerializedAs("keyMoveCameraOut")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode CameraOutKey = KeyCode.Keypad4;
-        
-        [FormerlySerializedAs("keyToggleScreenshotMode")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode ToggleScreenshotModeKey = KeyCode.Pause;
-        
-        [FormerlySerializedAs("keyToggleBlurPlane")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode BlurPlaneToggleKey = KeyCode.R;
-        [FormerlySerializedAs("keyToggleCenterLine")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode ToggleCenterLineKey = KeyCode.E;
-        
-        [FormerlySerializedAs("keyRestoreCamera")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode RestoreCameraKey = KeyCode.Q;
+            [JsonConverter(typeof(PlayerActionSetConverter))]
+            [FormerlySerializedAs("keyBinds")]
+            public KeyBinds KeyBinds = new KeyBinds();
+            [FormerlySerializedAs("displayTime")]
+            public float DisplayTime = 30f;
+            [FormerlySerializedAs("stoppedTime")]
+            public float StoppedTime = 10f;
 
-        [FormerlySerializedAs("CaptureButton")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public KeyCode CaptureScreenshotKey = KeyCode.F11;
-        
-        [FormerlySerializedAs("displayTime")]
-        public float DisplayTime = 30f;
-        [FormerlySerializedAs("stoppedTime")]
-        public float StoppedTime = 10f;
-        
-        [FormerlySerializedAs("alwaysUseSameSeedForParticles")]
-        public bool AlwaysUseSameSeedForParticles;
+            [FormerlySerializedAs("alwaysUseSameSeedForParticles")]
+            public bool AlwaysUseSameSeedForParticles;
 
-        public int CaptureFactor = 2;
-        
-        public int RenderW = 7680;
-        public int RenderH = 4320;
+            public int CaptureFactor = 2;
+
+            public int RenderW = 7680;
+            public int RenderH = 4320;
+    }
+    public class KeyBinds : PlayerActionSet
+    {
+        public PlayerAction CameraLeftKey;
+        public PlayerAction CameraRightKey;
+        public PlayerAction CameraUpKey;
+        public PlayerAction CameraDownKey;
+        public PlayerAction CameraInKey;
+        public PlayerAction CameraOutKey;
+        public PlayerAction ToggleScreenshotModeKey;
+        public PlayerAction BlurPlaneToggleKey;
+        public PlayerAction ToggleCenterLineKey;
+        public PlayerAction RestoreCameraKey;
+        public PlayerAction CaptureButton;
+        public PlayerAction CameraSpeedUp;
+        public KeyBinds()
+        {
+            CameraLeftKey = CreatePlayerAction("Camera Left");
+            CameraRightKey = CreatePlayerAction("Camera Right");
+            CameraUpKey = CreatePlayerAction("Camera Up");
+            CameraDownKey = CreatePlayerAction("Camera Down");
+            CameraInKey = CreatePlayerAction("Camera In");
+            CameraOutKey = CreatePlayerAction("Camera Out");
+            ToggleScreenshotModeKey = CreatePlayerAction("Toggle Screenshot Mode");
+            BlurPlaneToggleKey = CreatePlayerAction("BlurPlane Toggle");
+            ToggleCenterLineKey = CreatePlayerAction("Toggle CenterLine");
+            RestoreCameraKey = CreatePlayerAction("Restore Camera");
+            CaptureButton = CreatePlayerAction("Capture Button");
+            CameraSpeedUp = CreatePlayerAction("Camera Speed Up");
+        }
     }
 }
