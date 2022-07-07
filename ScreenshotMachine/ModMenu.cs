@@ -1,32 +1,42 @@
 ﻿using Satchel.BetterMenus;
+
 namespace ScreenshotMachine
 {
-    public class ModMenu
+    public static class ModMenu
     {
         private static Menu MenuRef;
+
         public static MenuScreen GetMenu(MenuScreen lastmenu)
         {
-            if (MenuRef == null)
-                MenuRef = Prepare();
+            MenuRef ??= Prepare();
+            
             return MenuRef.GetMenuScreen(lastmenu);
         }
-        public static Menu Prepare()
+
+        private static Menu Prepare()
         {
-            return new Menu("ScreenShotMachine", new Element[]
-            {
-                new KeyBind("Camera Left",ScreenshotMachine.Settings.KeyBinds.CameraLeftKey,Id:"CameraLeft"),
-                new KeyBind("Camera Right",ScreenshotMachine.Settings.KeyBinds.CameraRightKey,Id:"CameraRight"),
-                new KeyBind("Camera Up",ScreenshotMachine.Settings.KeyBinds.CameraUpKey,Id:"CameraUp"),
-                new KeyBind("Camera Down",ScreenshotMachine.Settings.KeyBinds.CameraDownKey,Id:"CameraDown"),
-                new KeyBind("Camera In",ScreenshotMachine.Settings.KeyBinds.CameraInKey,Id:"CameraIn"),
-                new KeyBind("Camera Out",ScreenshotMachine.Settings.KeyBinds.CameraOutKey,Id:"CameraOut"),
-                new KeyBind("Toggle Mode",ScreenshotMachine.Settings.KeyBinds.ToggleScreenshotModeKey,Id:"ToggleMode"),
-                new KeyBind("Toggle BlurPlane",ScreenshotMachine.Settings.KeyBinds.BlurPlaneToggleKey,Id:"Toggle BlurPlane"),
-                new KeyBind("Toggle CenterLine",ScreenshotMachine.Settings.KeyBinds.ToggleCenterLineKey,Id:"Toggle CenterLine"),
-                new KeyBind("Reset Camera",ScreenshotMachine.Settings.KeyBinds.RestoreCameraKey,Id:"Reset Camera"),
-                new KeyBind("Capture Screen",ScreenshotMachine.Settings.KeyBinds.CaptureButton,Id:"Capture Screen"),
-                new KeyBind("Camera Speed Up",ScreenshotMachine.Settings.KeyBinds.CameraSpeedUp,Id:"Camera Speed Up"),
-            });
+            var binds = ScreenshotMachine.Settings.KeyBinds;
+
+            return new Menu
+            (
+                "ScreenShotMachine",
+                
+                new Element[]
+                {
+                    new KeyBind("Camera Left", binds.CameraLeftKey, Id: "CameraLeft"),
+                    new KeyBind("Camera Right", binds.CameraRightKey, Id: "CameraRight"),
+                    new KeyBind("Camera Up", binds.CameraUpKey, Id: "CameraUp"),
+                    new KeyBind("Camera Down", binds.CameraDownKey, Id: "CameraDown"),
+                    new KeyBind("Camera In", binds.CameraInKey, Id: "CameraIn"),
+                    new KeyBind("Camera Out", binds.CameraOutKey, Id: "CameraOut"),
+                    new KeyBind("Toggle Mode", binds.ToggleScreenshotModeKey, Id: "ToggleMode"),
+                    new KeyBind("Toggle BlurPlane", binds.BlurPlaneToggleKey, Id: "Toggle BlurPlane"),
+                    new KeyBind("Toggle CenterLine", binds.ToggleCenterLineKey, Id: "Toggle CenterLine"),
+                    new KeyBind("Reset Camera", binds.RestoreCameraKey, Id: "Reset Camera"),
+                    new KeyBind("Capture Screen", binds.CaptureButton, Id: "Capture Screen"),
+                    new KeyBind("Camera Speed Up", binds.CameraSpeedUp, Id: "Camera Speed Up"),
+                }
+            );
         }
     }
 }

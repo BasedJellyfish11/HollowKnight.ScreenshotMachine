@@ -1,19 +1,17 @@
 ﻿using System;
-using Modding;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using UnityEngine;
 using UnityEngine.Serialization;
 using Modding.Converters;
 using InControl;
+
 namespace ScreenshotMachine
 {
     [Serializable]
     public class GlobalSettings
     {
             [JsonConverter(typeof(PlayerActionSetConverter))]
-            [FormerlySerializedAs("keyBinds")]
-            public KeyBinds KeyBinds = new KeyBinds();
+            public KeyBinds KeyBinds = new();
+            
             [FormerlySerializedAs("displayTime")]
             public float DisplayTime = 30f;
             [FormerlySerializedAs("stoppedTime")]
@@ -27,6 +25,7 @@ namespace ScreenshotMachine
             public int RenderW = 7680;
             public int RenderH = 4320;
     }
+    
     public class KeyBinds : PlayerActionSet
     {
         public PlayerAction CameraLeftKey;
@@ -41,6 +40,7 @@ namespace ScreenshotMachine
         public PlayerAction RestoreCameraKey;
         public PlayerAction CaptureButton;
         public PlayerAction CameraSpeedUp;
+        
         public KeyBinds()
         {
             CameraLeftKey = CreatePlayerAction("Camera Left");
@@ -55,6 +55,24 @@ namespace ScreenshotMachine
             RestoreCameraKey = CreatePlayerAction("Restore Camera");
             CaptureButton = CreatePlayerAction("Capture Button");
             CameraSpeedUp = CreatePlayerAction("Camera Speed Up");
+            
+            CameraLeftKey.AddDefaultBinding(Key.LeftArrow);
+            CameraRightKey.AddDefaultBinding(Key.RightArrow);
+            CameraUpKey.AddDefaultBinding(Key.UpArrow);
+            CameraDownKey.AddDefaultBinding(Key.DownArrow);
+            
+            CameraInKey.AddDefaultBinding(Key.Key6);
+            CameraOutKey.AddDefaultBinding(Key.Key7);
+            
+            ToggleScreenshotModeKey.AddDefaultBinding(Key.P);
+            BlurPlaneToggleKey.AddDefaultBinding(Key.R);
+            ToggleCenterLineKey.AddDefaultBinding(Key.E);
+            
+            RestoreCameraKey.AddDefaultBinding(Key.Y);
+            
+            CaptureButton.AddDefaultBinding(Key.F11);
+            
+            CameraSpeedUp.AddDefaultBinding(Key.Backspace);
         }
     }
 }

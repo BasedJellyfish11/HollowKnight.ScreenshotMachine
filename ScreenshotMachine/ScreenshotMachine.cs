@@ -10,8 +10,10 @@ using UObject = UnityEngine.Object;
 namespace ScreenshotMachine
 {
     [UsedImplicitly]
-    public class ScreenshotMachine : Mod, IGlobalSettings<GlobalSettings>,ICustomMenuMod
+    public class ScreenshotMachine : Mod, IGlobalSettings<GlobalSettings>, ITogglableMod, ICustomMenuMod
     {
+        private GameObject _handler;
+        
         public static GlobalSettings Settings = new ();
 
         public override void Initialize()
@@ -23,11 +25,23 @@ namespace ScreenshotMachine
             On.GameManager.SceneLoadInfo.NotifyFetchComplete += ParticleStopper.StopFreeze;
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += ParticleStopper.CallFreezeParticles;
 
-            GameObject go = new GameObject("ScreenshotMachineHandler", typeof(NonBouncer), typeof(Screenshotter));
-            UObject.DontDestroyOnLoad(go);
+            _handler = new GameObject("ScreenshotMachineHandler", typeof(NonBouncer), typeof(Screenshotter));
+            UObject.DontDestroyOnLoad(_handler);
             
-            ParticleStopper.CoroutineStarter = go.GetComponent<NonBouncer>();
+            ParticleStopper.CoroutineStarter = _handler.GetComponent<NonBouncer>();
             LoadLines();
+        }
+        
+        public void Unload()
+        {
+            ModHooks.HeroUpdateHook -= CameraHandler.HotkeyHandler;
+            On.GameManager.SceneLoadInfo.NotifyFetchComplete -= CameraHandler.Reset;
+            On.CameraController.LateUpdate -= CameraHandler.RemoveCameraLogic;
+            
+            On.GameManager.SceneLoadInfo.NotifyFetchComplete -= ParticleStopper.StopFreeze;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= ParticleStopper.CallFreezeParticles;
+
+            UObject.Destroy(_handler);
         }
 
         public new static void Log(object message) => Logger.Log("[ScreenshotMachine] - " + message );
