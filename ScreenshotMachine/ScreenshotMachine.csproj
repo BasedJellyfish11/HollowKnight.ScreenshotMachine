@@ -101,7 +101,12 @@
         <Delete Files="$(ProjectDir)/$(TargetName).zip" />
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/" />
         <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ProjectDir)/Output/" />
-        <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/" ContinueOnError="true" />
+        <Copy 
+                Condition="Exists('$(SolutionDir)/README.md')"
+                SourceFiles="$(SolutionDir)/README.md" 
+                DestinationFolder="$(ProjectDir)/Output/" 
+                ContinueOnError="true" 
+        />
         <ZipDirectory DestinationFile="$(ProjectDir)/$(TargetName).zip" SourceDirectory="$(ProjectDir)/Output" />
         <RemoveDir Directories="$(ProjectDir)Output" />
 
